@@ -220,13 +220,13 @@ def extract_genes_seq(assembly: str, TARGET_GENES: str, project_name: str,
     find_amr_genes(assembly, TARGET_GENES, CALC_COVERAGE, project_name, N_THREADS)
 
     blast_output = assembly.replace(".fa", ".blast")
+    gene_metadata, housekeeping_metadata, SEQ_ID, PRJ_PATH,\
+        genes_list = compile_genes_detected(assembly, blast_output,
+                                            TARGET_GENES, PREFIX, DIR_DEPTH,
+                                            CALC_COVERAGE, seq_cutoff,
+                                            ID_THRESHOLD, DENOVO)
     # Genes found?
     if os.lstat(blast_output).st_size > 0:
-        gene_metadata, housekeeping_metadata, SEQ_ID, PRJ_PATH,\
-            genes_list = compile_genes_detected(assembly, blast_output,
-                                                TARGET_GENES, PREFIX, DIR_DEPTH,
-                                                CALC_COVERAGE, seq_cutoff,
-                                                ID_THRESHOLD, DENOVO)
         return gene_metadata, housekeeping_metadata, SEQ_ID, PRJ_PATH, genes_list
     else:
-        return None, None, None, None, None
+        return None, None, SEQ_ID, PRJ_PATH, genes_list
