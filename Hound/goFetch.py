@@ -76,8 +76,6 @@ def main(Opts):
                             if file.find(".fa") > -1 and file.find(".fa.") == -1]
             RD_DEPTH_STATS = dict() if options.CALC_COVERAGE is True else None
             for assembly in assemblies:  # Force extracting promoter + CDS
-                # TODO: If no genes found, create an empty file to show there was
-                # a search indeed, just nothing found.
                 loci_metadata, hk_metadata, SEQ_ID, PRJ_PATH,\
                     GENES_LIST = extract_genes_seq(ASSEMBLY_PATH + assembly,
                                                    options.TARGET_GENES,

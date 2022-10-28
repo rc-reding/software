@@ -229,4 +229,7 @@ def extract_genes_seq(assembly: str, TARGET_GENES: str, project_name: str,
     if os.lstat(blast_output).st_size > 0:
         return gene_metadata, housekeeping_metadata, SEQ_ID, PRJ_PATH, genes_list
     else:
+        # If genes not found, create empty file to acknowledge
+        # there was a search but nothing found.
+        os.system("touch " + genes_list)
         return None, None, SEQ_ID, PRJ_PATH, genes_list
