@@ -41,6 +41,7 @@ def sanitise_options(options):
         raise ValueError("""--coverage requires reference/housekeeping genes to
                             estimate baseline coverage depth. Use --help for
                             instructions.""")
+
     if options.HK_GENES is True and options.CALC_COVERAGE is False:
         warnings.warn("""--hk-genes were given without --coverage. This option
                         will be ignored.""")
@@ -80,10 +81,6 @@ def sanitise_options(options):
         options.PATH = os.path.abspath(options.PATH[0][:-1])
     else:
         options.PATH = os.path.abspath(options.PATH[0])
-
-    # TODO: CHECK THEY ARE INDEED FASTA FILES
-    if options.TARGET_GENES is not None:
-        options.TARGET_GENES = os.path.abspath(options.TARGET_GENES[0])
 
     if options.REF_GENOME is not None:
         options.REF_GENOME = os.path.abspath(options.REF_GENOME[0])
@@ -202,10 +199,10 @@ def process_reads(illumina_rd: str, REFERENCE: str, PRJ_NAME: str, N_CPU: int,
                    None, None
 
 
-def extract_genes_seq(assembly: str, TARGET_GENES: str, project_name: str,
-                      PREFIX: str, DIR_DEPTH: int, N_THREADS: int,
-                      seq_cutoff: int, ID_THRESHOLD: tuple, DENOVO: bool = False,
-                      CALC_COVERAGE: bool = False) -> str:
+def extract_genes_seq(assembly: str, TARGET_GENES: str, HK_GENES: str,
+                      project_name: str, PREFIX: str, DIR_DEPTH: int,
+                      N_THREADS: int, seq_cutoff: int, ID_THRESHOLD: tuple,
+                      DENOVO: bool = False, CALC_COVERAGE: bool = False) -> str:
     """
         Process assembly folder to retrieve BLAST output files, and parse
         them to create a FASTA file containing the nucleotidic sequence of
@@ -217,7 +214,8 @@ def extract_genes_seq(assembly: str, TARGET_GENES: str, project_name: str,
     house_keeping(assembly)
 
     # Find matches
-    find_amr_genes(assembly, TARGET_GENES, CALC_COVERAGE, project_name, N_THREADS)
+    find_amr_genes(assembly, TARGET_GENES, HK_GENES, CALC_COVERAGE,
+                   project_name, N_THREADS)
 
     blast_output = assembly.replace(".fa", ".blast")
     gene_metadata, housekeeping_metadata, SEQ_ID, PRJ_PATH,\

@@ -79,9 +79,9 @@ def main(Opts):
                 loci_metadata, hk_metadata, SEQ_ID, PRJ_PATH,\
                     GENES_LIST = extract_genes_seq(ASSEMBLY_PATH + assembly,
                                                    options.TARGET_GENES,
-                                                   PRJ_NAME, options.PREFIX,
-                                                   DIR_DEPTH, N_CPU+2,
-                                                   options.SEQ_CUTOFF,
+                                                   options.HK_GENES, PRJ_NAME,
+                                                   options.PREFIX, DIR_DEPTH,
+                                                   N_CPU+2, options.SEQ_CUTOFF,
                                                    options.ID_THRESHOLD,
                                                    DENOVO=options.ASSEMBLE_DENOVO,
                                                    CALC_COVERAGE=options.CALC_COVERAGE)
@@ -145,12 +145,12 @@ if __name__ == '__main__':
                        in the data analysis. Requires --hk-genes.")
 
     Args.add_argument("--hk-genes", metavar="FILE", type=str, dest="HK_GENES",
-                      nargs=1, help="List of Multilocus sequence typing (MLST) \
+                      help="List of Multilocus sequence typing (MLST) \
                       genes, or other reference genes, in FASTA format to \
                       compute baseline coverage depth. Requires --coverage.")
 
     Args.add_argument("--genes", metavar="FILE", type=str, dest="TARGET_GENES",
-                      nargs=1, help="List of genes to be found, in FASTA \
+                      help="List of genes to be found, in FASTA \
                       format. Requires --identity and --prefix.")
 
     Args.add_argument("--prefix", metavar="NAME", type=str, dest="PREFIX",

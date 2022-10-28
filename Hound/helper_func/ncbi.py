@@ -263,8 +263,9 @@ def compile_genes_detected(assembly: str, blast_output: str, TARGET_GENES: str,
         return False, False, SEQ_ID, PRJ_PATH, PRJ_PATH + SEQS_DN_FNAME
 
 
-def find_amr_genes(assembly: str, GENES_FNAME: str, CALC_COVERAGE: bool,
-                   project_name: str = None, N_THREADS: int = 1) -> str:
+def find_amr_genes(assembly: str, GENES_FNAME: str, HKGENES_FNAME: str,
+                   CALC_COVERAGE: bool, project_name: str = None,
+                   N_THREADS: int = 1) -> str:
     """
         Compares 'assembly' to genes located in bespoke, local BLAST database
         and returns hits found. The number of hits returned can be filtered
@@ -279,7 +280,6 @@ def find_amr_genes(assembly: str, GENES_FNAME: str, CALC_COVERAGE: bool,
 
     # Compare list of genes to assembly_db.
     # tblastn: Prot-query in nucl-db, blastx: Nucl-query in prot-db
-    genes_path = _loc_src_genes()  # FIX: assumes folder exists in every project: NO! it is common for all projects...
     blast = _find_tool('tblastn')  # FIX: assumes target sequence is a protein.
 
     # Default params
@@ -300,7 +300,7 @@ def find_amr_genes(assembly: str, GENES_FNAME: str, CALC_COVERAGE: bool,
         # Housekeeping genes
         housekeeping_file = matches_file.replace(".blast", "_MLST.blast")
 
-    # Find GENES_FNAME in assembly (NOTE: GENES_FNAME is an ABS path, no genes_path needed)
+    # Find GENES_FNAME in assembly
     blast_args = tuple(["-num_threads " + str(N_THREADS), "-evalue " + str(EVAL),
                        "-word_size " + str(WORD_SIZE), "-matrix " + MATRIX,
                        "-gapopen " + str(G_OPEN), "-gapextend " +\
@@ -315,6 +315,6 @@ def find_amr_genes(assembly: str, GENES_FNAME: str, CALC_COVERAGE: bool,
                            "-word_size " + str(WORD_SIZE), "-matrix " + MATRIX,
                            "-gapopen " + str(G_OPEN), "-gapextend " +\
                            str(G_EXTENDED), "-outfmt " + str(O_FMT),
-                           "-query " + genes_path + MLST_FNAME, "-db " +\
-                           assembly_db, "-out " + housekeeping_file])
+                           "-query " + HKGENES_FNAME, "-db " + assembly_db,
+                           "-out " + housekeeping_file])
         os.system(blast + str(" ").join(blast_args))
