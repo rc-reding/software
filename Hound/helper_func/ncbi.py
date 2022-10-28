@@ -166,8 +166,6 @@ def _convert_gene_name(ncbi_code: str, TARGET_GENES: str) -> str:
             ncbi_code = str("_").join(ncbi_code.split("_")[:-1])
         elif len(ncbi_code.split("_")) > 2:
             ncbi_code = str("_").join(ncbi_code.split("_")[:-1])
-    # Select GENES_FNAME based on user preference
-    genes_path = _loc_src_genes()  # FIX: assumes folder exists in every project: NO! it is common for all projects...
     # Detect ncbi_code in fasta file, return human-readable name
     db_metadata = SeqIO.parse(TARGET_GENES, 'fasta')
     ncbi_entry = [entry.description for entry in db_metadata if entry.name == ncbi_code]
