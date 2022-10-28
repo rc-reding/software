@@ -209,9 +209,8 @@ def analyse_seqs_found(seqs_file: str, FLT_THR: float = 0.5,
         _mark_duplicates(alignment_file)
         # Generate phylogeny to re-arrange alignment sequences
         # This step is slow (phyml!), do it only if the phylogeny doesn't exist
-        if gen_phylogeny is True:
-            tree_file, phylogeny = _generate_phylogeny(alignment_file)
-            _sort_alignment(alignment_file, phylogeny)
+        tree_file, phylogeny = _generate_phylogeny(alignment_file)
+        _sort_alignment(alignment_file, phylogeny)
         # Consensus is 80% ID, conserved is 95%. Conserved is for plotting *
         consensus_seq, conserved_seq = _estimate_consensus(alignment_file,
         CONS_THRESHOLD=0.7)
