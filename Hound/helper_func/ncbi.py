@@ -39,16 +39,6 @@ def _convert_to_db(assembly: str, N_THREADS: int) -> str:
     return db_path
 
 
-def _loc_src_genes() -> str:
-    """
-        Locate path for genes of interest. This function has been changed
-        to avoid looking for these genes in the project folder and allow
-        the execution of the program on remote folders.
-    """
-    project_path = os.getcwd().split("/")[:-1]
-    return str("/").join(project_path) + str("/src_genes")
-
-
 def _parse_blast_output(SEQ_ID: str, match_list: str, THRESHOLD_RANGE: tuple) -> str:
     """
         Retrieves a tab-separated match list from BLAST, and process
