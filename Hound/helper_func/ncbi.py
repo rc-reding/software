@@ -5,7 +5,6 @@ from .sundry import _find_tool, _cleanup_path
 
 
 # Define constants
-MLST_FNAME = "/mlst_genes.fa"  # FIX: Use user-given filename
 SEQS_FNAME = "/genes_found.fa"
 SEQS_DN_FNAME = "/genes_found_denovo_assembly.fa"
 
