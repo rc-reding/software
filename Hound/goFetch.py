@@ -9,11 +9,6 @@ import os, argparse
 import sys  # temporal?
 
 
-def maine(Opts):
-    # Check Opts consistency
-    options = sanitise_options(Opts)
-    print(options)
-
 
 def main(Opts):
     """
