@@ -218,9 +218,11 @@ def analyse_seqs_found(seqs_file: str, FLT_THR: float = 0.5,
 
 
 def plot_analysis(alignment_file: str, cov_file: str, cov_stats: dict,
-                  PREFIX: str, CUTOFF: int = 0, ROI: bool = False,
-                  PROMOTER: bool = True, LABELS: str = None) -> str:
+                  PLOT_FNAME: str, PREFIX: str, CUTOFF: int = 0,
+                  ROI: bool = False, PROMOTER: bool = True,
+                  LABELS: str = None) -> str:
     """
+        Prodice barcode plot of multiple alignment given by `alignment_file'.
     """
     # Extract metadata for TEM promoter boxes
     # TODO: Avoid hard-coding sequences, take a user-given parameter
@@ -238,8 +240,8 @@ def plot_analysis(alignment_file: str, cov_file: str, cov_stats: dict,
                                 "Pa -35", "Pb -35/\nPa -10"])
         ref_seqs_locations = _extract_reference_locations(consensus_seq,
                                                           ref_seqs)
-        mutations_found = _detect_mutations(alignment_file,
-                                            ref_seqs_locations, ref_seqs)
+        mutations_found = _detect_mutations(alignment_file, ref_seqs_locations,
+                                            ref_seqs)
     else:
         mutations_found = None
         ref_seqs_locations = None
@@ -248,11 +250,10 @@ def plot_analysis(alignment_file: str, cov_file: str, cov_stats: dict,
     alignment = AlignIO.read(alignment_file, 'fasta')
     cov_data = _extract_coverage(cov_file, phylogeny)
     # Plot alignment
-    plot_alignment(alignment, PREFIX, cov_data, phylogeny,
-                   consensus_seq, conserved_seq, mutations_found,
-                   cov_file, CUTOFF, (ref_seqs_label,
-                   ref_seqs_locations), PROMOTER_ONLY=PROMOTER,
-                   show_plot=False)
+    plot_alignment(alignment, PLOT_FNAME, PREFIX, cov_data, phylogeny,
+                   consensus_seq, conserved_seq, mutations_found, LABELS,
+                   CUTOFF, (ref_seqs_label, ref_seqs_locations),
+                   PROMOTER_ONLY=PROMOTER, show_plot=False)
 
     # Plot [baseline] coverage depth stats for completeness
-    plot_depth_stats(cov_stats)
+    #plot_depth_stats(cov_stats)

@@ -8,9 +8,6 @@ from external.plot_eteTree import plot_tree
 from ete3 import NodeStyle
 
 
-# DEFINE CONSTANTS
-# XLS_DB = str("/WGS_metadata/ARG_WGS_3GC-R_DATA_RESFINDER.xlsx")
-XLS_DB = str("/WGS_metadata/TEM_OXA_Isolates_Aim.xlsx")
 
 def _convert_to_num(sequence: Seq) -> Seq:
     """
@@ -35,18 +32,16 @@ def _create_custom_cmap():
     return
 
 
-def _format_tree_label(leaf, REF_NAME: str) -> str:
+def _format_tree_label(leaf, XLS_DB: str) -> str:
     """
         Manipulate the name of each leaf from the phylogenetic tree to
         add metadata from XLS_DB.
     """
     ASSEMBLY_NAME_POS = 0
     ASSEMBLY_TYPE_POS = 6
-    kwd_idx = REF_NAME.split("/").index("Bristol") + 1
-    XLS_PATH = str("/").join(REF_NAME.split("/")[:kwd_idx])
 
     # Load (and set active worksheet) excel file with metadata
-    DB = openpyxl.load_workbook(XLS_PATH + XLS_DB).active
+    DB = openpyxl.load_workbook(XLS_DB).active
     for asmbl in DB:
         if asmbl[ASSEMBLY_NAME_POS].value is not None:
             if leaf.name.split("__")[0].split("_L")[0] == asmbl[ASSEMBLY_NAME_POS].value.removesuffix('.fasta'):
@@ -61,11 +56,12 @@ def _index_phylogeny(phylogeny) -> dict:
     return dict((leaf.name.split('__')[0], id) for id, leaf in enumerate(phylogeny.get_leaves()[::-1]))
 
 
-def plot_alignment(alignment: Seq, PREFIX: str, coverage_data: list,
-                   phylogeny: str, consensus_seq: Seq, conserved_seq: Seq,
-                   mutations: dict, REF_NAME: str, SEQ_CUTOFF: int,
-                   reference_regions: list, custom_cmap: array = None,
-                   PROMOTER_ONLY: bool = False, show_plot: bool = True):
+def plot_alignment(alignment: Seq, FIG_FNAME: str, PREFIX: str,
+                   coverage_data: list, phylogeny: str, consensus_seq: Seq,
+                   conserved_seq: Seq, mutations: dict, LABELS: str,
+                   SEQ_CUTOFF: int, reference_regions: list,
+                   custom_cmap: array = None, PROMOTER_ONLY: bool = False,
+                   show_plot: bool = True):
     """
         Plot alignment as a grid, highlighting deviations form consensus
         and conserved sequences. If 'promoter_regions' given, it will also
@@ -90,13 +86,17 @@ def plot_alignment(alignment: Seq, PREFIX: str, coverage_data: list,
     else:
         fig_width = 20
 
-    fig, ax = plt.subplot_mosaic("122223", figsize=(fig_width,
-                                                    int(0.085 * len(alignment))))
+    if coverage_data is not None:
+        fig, ax = plt.subplot_mosaic("122223", figsize=(fig_width,
+                                                        int(0.085 * len(alignment))))
+    else:
+        fig, ax = plt.subplot_mosaic("12222", figsize=(fig_width,
+                                                        int(0.085 * len(alignment))))
 
     # Plot (TODO: use alpha to denote proximity to ideal promoter seq)
     ax['2'].pcolormesh(num_aln, cmap=my_cmap, zorder=-5, vmin=num_aln.min(),
                        vmax=num_aln.max())
-    # Add SNPs (TODO: Colour each NT? can be a bit of a mess so many colours around...)
+    # Add SNPs
     if mutations is not None:
         for asmbl in mutations:
             if len(mutations[asmbl]) > 0:
@@ -120,29 +120,28 @@ def plot_alignment(alignment: Seq, PREFIX: str, coverage_data: list,
                     zorder=-10)
 
     if PROMOTER_ONLY is True:
-        ax['2'].set_xlim(0, 311)
+        ax['2'].set_xlim(0, SEQ_CUTOFF * 1.35)
 
     # Highlight promoter regions, if any
     if reference_regions[0] is not None:
         ref_label, ref_location = reference_regions
         for label, location in zip(ref_label, ref_location):
-            ax['2'].plot([location[0]+1, location[1]-1], [ax_ylim[1]*1.0025, ax_ylim[1]*1.0025], 'black',
-                         linewidth=3)  # Compensate with loc[0]+1 and loc[1]-1 as line is _very_ thick (thinner won't be visible)
+            ax['2'].plot([location[0]+1, location[1]-1], [ax_ylim[1]*1.005,
+                         ax_ylim[1]*1.005], 'black', linewidth=3)
             ax['2'].text(location[0] + int((location[1] - location[0])/2),
-                         ax_ylim[1]*1.0075, label, horizontalalignment='center',
+                         ax_ylim[1]*1.015, label, horizontalalignment='center',
                          fontsize=7)
 
     # Highligh ATG init translation
     if PROMOTER_ONLY is True:
         # I do NOT like this. Do better.
-        # atg_pos = consensus_seq[:SEQ_CUTOFF].lfind('ATG') + 40  # There are multiple ATG, real one is ~40bp away from last box
-        atg_pos = consensus_seq[SEQ_CUTOFF-3:].lfind('ATG')
+        atg_pos = consensus_seq[:SEQ_CUTOFF-3].rfind('ATGAGTATT')  # TODO: This ATG seq is just for TEM
     else:
-        atg_pos = consensus_seq[:SEQ_CUTOFF+3].rfind('ATG')
+        atg_pos = consensus_seq[SEQ_CUTOFF+3:].find('ATGAGTATT')
     atg_col = 'darkgrey' if atg_pos > -1 else 'tomato'
-    ax['2'].plot([atg_pos+1, atg_pos + 2], [ax_ylim[1]*1.0025, ax_ylim[1]*1.0025],
+    ax['2'].plot([atg_pos+1, atg_pos + 2], [ax_ylim[1]*1.005, ax_ylim[1]*1.005],
                  atg_col, linewidth=3)  # Compensate with loc[0]+1 and loc[1]-1 as line is _very_ thick (thinner won't be visible)
-    ax['2'].text(atg_pos+2, ax_ylim[1]*1.0075, 'ATG',
+    ax['2'].text(atg_pos+2, ax_ylim[1]*1.015, 'ATG',
                  horizontalalignment='center', fontsize=7, color=atg_col)
 
     # Get rid of plot frame, but preserve labels (so can't use axis('off'))
@@ -161,7 +160,7 @@ def plot_alignment(alignment: Seq, PREFIX: str, coverage_data: list,
     ax['2'].set_yticks([])
 
     # If too new sequences, legend can overlap alignment.
-    if len(alignment) < 75:
+    if len(alignment) < 85:
         ax['2'].legend(loc='upper center', ncol=4, bbox_to_anchor=(0.525, 1.075),
                        frameon=False, fontsize=8)
     else:
@@ -169,34 +168,35 @@ def plot_alignment(alignment: Seq, PREFIX: str, coverage_data: list,
                        frameon=False, fontsize=8)
 
     # Plot coverage data
-    coverage_data.reverse()
+    if coverage_data is not None:
+        coverage_data.reverse()
 
-    ax['3'].barh(range(len(coverage_data)), coverage_data, height=1,
-                 align='center', color='black', zorder=10)
-    ax['3'].plot([2, 2], [0, len(coverage_data)-1], linewidth=2, color='red',
-                 zorder=11)
-    ax['3'].autoscale(tight=True)
-    ax['3'].set(xlabel='Coverage depth')
-    ax['3'].grid(axis='x', linestyle=':', alpha=0.5, linewidth=0.5,
-                 color='lightgrey')
+        ax['3'].barh(range(len(coverage_data)), coverage_data, height=1,
+                     align='center', color='black', zorder=10)
+        ax['3'].plot([2, 2], [0, len(coverage_data)-1], linewidth=2, color='red',
+                     zorder=11)
+        ax['3'].autoscale(tight=True)
+        ax['3'].set(xlabel='Coverage depth')
+        ax['3'].grid(axis='x', linestyle=':', alpha=0.5, linewidth=0.5,
+                     color='lightgrey')
 
-    # Adjust position of axes to account for annotations in main plot
-    barplot_dims = ax['3'].get_position()  # left, bottom, width, height
-    barplot_dims.y1 = barplot_dims.y1 * (1/1.0535)  #  Accuont for annotations
-    barplot_dims.x0 = barplot_dims.x0 * 0.975  # shift a bit towards left
-    ax['3'].set_position(barplot_dims)
+        # Adjust position of axes to account for annotations in main plot
+        barplot_dims = ax['3'].get_position()  # left, bottom, width, height
+        barplot_dims.y1 = barplot_dims.y1 * (1/1.045)  #  Accuont for annotations
+        barplot_dims.x0 = barplot_dims.x0 * 0.975  # shift a bit towards left
+        ax['3'].set_position(barplot_dims)
 
-    # Get rid of plot frame, but preserve labels (so can't use axis('off'))
-    ax['3'].spines['left'].set_visible(False)
-    ax['3'].spines['right'].set_visible(False)
+        # Get rid of plot frame, but preserve labels (so can't use axis('off'))
+        ax['3'].spines['left'].set_visible(False)
+        ax['3'].spines['right'].set_visible(False)
 
-    # Adjust fontsize
-    ax['3'].xaxis.label.set_size(8)
-    ax['3'].yaxis.label.set_size(8)
-    ax['3'].tick_params(direction='out', labelsize=6, top=True, labeltop=True)
-    ax['3'].set_yticks([])
-    ax_lims = ax['3'].get_xlim()
-    ax['3'].set_xlim(0, ax_lims[1].__ceil__())
+        # Adjust fontsize
+        ax['3'].xaxis.label.set_size(8)
+        ax['3'].yaxis.label.set_size(8)
+        ax['3'].tick_params(direction='out', labelsize=6, top=True, labeltop=True)
+        ax['3'].set_yticks([])
+        ax_lims = ax['3'].get_xlim()
+        ax['3'].set_xlim(0, ax_lims[1].__ceil__())
 
     # Plot phylogeny
     tree_dims = ax['1'].get_position()  # left, bottom, width, height
@@ -231,7 +231,11 @@ def plot_alignment(alignment: Seq, PREFIX: str, coverage_data: list,
 
     asmbl_colors = dict()
     for leaf in phylogeny.iter_leaves():
-        asmbl_type = _format_tree_label(leaf, REF_NAME)
+        if LABELS is not None:
+            asmbl_type = _format_tree_label(leaf, LABELS)
+        else:
+            asmbl_type = None
+
         if mutations is not None:
             # Highlight genes based on I) source and II) mutations. Black default.
             if len(mutations[leaf.name.split("__")[0]]) > 0:
@@ -253,7 +257,7 @@ def plot_alignment(alignment: Seq, PREFIX: str, coverage_data: list,
         # Assign colours
         asmbl_colors[leaf.name] = asmbl_colour
 
-    N_OFFSET = 0.1
+    N_OFFSET = 0.01
     if tree_distance < 0.1:
         exponent = tree_distance.__repr__().split('.')[1].count('0') + 3
         N_OFFSET = 10 ** int(-exponent)
@@ -265,11 +269,9 @@ def plot_alignment(alignment: Seq, PREFIX: str, coverage_data: list,
     coords = plot_tree(phylogeny, name_offset=N_OFFSET, name_colors=asmbl_colors,
                        font_size=F_SIZE, ms=0, axe=ax['1'])
 
-    # Save figure (TODO: implement user-given file)
-    FIG_FNAME = PREFIX + str("_alignment.eps")
-    if PROMOTER_ONLY is True:
-        FIG_FNAME = PREFIX + str("_promoter_alignment.eps")
-    fig.savefig("../figures/" + FIG_FNAME, format='eps', bbox_inches='tight')
+    # Save figure
+    FIG_EXT = FIG_FNAME.split('.')[1]
+    fig.savefig(FIG_FNAME, format=FIG_EXT, bbox_inches='tight')
 
     if show_plot is True:
         plt.show()

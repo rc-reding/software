@@ -105,11 +105,12 @@ def main(Opts):
         # RD_DEPTH needed by plot_analysis routine, correct if neccessary
         if options.CALC_COVERAGE is False:
             RD_DEPTH = None
+            RD_DEPTH_STATS = None
 
         plot_analysis(alignment_file, RD_DEPTH, RD_DEPTH_STATS,
-                      options.PREFIX, CUTOFF=options.SEQ_CUTOFF,
-                      ROI=options.ROI_COORDS, PROMOTER=options.PROMOTER,
-                      LABELS=options.XLS_DB)
+                      options.PLOT_FNAME, options.PREFIX,
+                      CUTOFF=options.SEQ_CUTOFF, ROI=options.ROI_COORDS,
+                      PROMOTER=options.PROMOTER, LABELS=options.XLS_DB)
 
 
 if __name__ == '__main__':
@@ -186,12 +187,12 @@ if __name__ == '__main__':
                       help="Generate plot from the multiple alignment of \
                       sequences found, and save as FILE.")
 
-    Args.add_argument("--roi", metavar="FILE", type=str, nargs=1,
+    Args.add_argument("--roi", metavar="FILE", type=str,
                       dest="ROI_COORDS", help="Sequences of interest to look \
                       for in the gene(s) found, in FASTA format. Requires \
                       --plot.")
 
-    Args.add_argument("--labels", metavar="FILE", type=str, nargs=1,
+    Args.add_argument("--labels", metavar="FILE", type=str,
                       dest="XLS_DB", help="XLS file containing assembly name \
                       (col 1), and assembly type (col 6) to label phylogeny \
                       leafs (defaults to assembly name). Requires --plot.")
