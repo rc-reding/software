@@ -256,4 +256,5 @@ def plot_analysis(alignment_file: str, cov_file: str, cov_stats: dict,
                    PROMOTER_ONLY=PROMOTER, show_plot=False)
 
     # Plot [baseline] coverage depth stats for completeness
-    #plot_depth_stats(cov_stats)
+    if cov_stats is not None:
+        plot_depth_stats(cov_stats)
