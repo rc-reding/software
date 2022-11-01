@@ -213,13 +213,10 @@ def retrieve_depth(seq_data: tuple, PREFIX: str, PRJ_PATH: str):
     TARGET_SEQID = 5
 
     assembly, loci_metadata, SEQ_ID, SEQ_CUTOFF, hk_metadata = seq_data
-    if PREFIX != 'AMR':
-        # Sanitise metadata list by removing hits with low score and short
-        # length likely to be small fragments with homology to query sequece.
-        # WARNING: SANITISE ONLY WHEN LOOKING OR A SPECIFIC GENE, OTHERWISE
-        # IT WILL BE _VERY_ DIFFICULT TO FIND NEW GENES BY SIMILARITY.
-        loci_metadata = _sanitise_gene_metadata(loci_metadata)
-        hk_metadata = _sanitise_gene_metadata(hk_metadata)
+
+    # Sanitise metadata list
+    loci_metadata = _sanitise_gene_metadata(loci_metadata)
+    hk_metadata = _sanitise_gene_metadata(hk_metadata)
 
     # Calculate coverage of assembly (one baseline per assembly, out of loop)
     if hk_metadata is not False:
