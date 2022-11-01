@@ -262,9 +262,9 @@ def plot_alignment(alignment: Seq, FIG_FNAME: str, PREFIX: str,
         exponent = tree_distance.__repr__().split('.')[1].count('0') + 3
         N_OFFSET = 10 ** int(-exponent)
 
-    F_SIZE = 5.5
+    F_SIZE = 5
     if fig_width < 20:
-        F_SIZE = 4.5
+        F_SIZE = 4
 
     coords = plot_tree(phylogeny, name_offset=N_OFFSET, name_colors=asmbl_colors,
                        font_size=F_SIZE, ms=0, axe=ax['1'])
