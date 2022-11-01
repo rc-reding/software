@@ -248,7 +248,11 @@ def plot_analysis(alignment_file: str, phylogeny: PhyloTree, cov_file: str,
         ref_seqs_label = None
 
     alignment = AlignIO.read(alignment_file, 'fasta')
-    cov_data = _extract_coverage(cov_file, phylogeny)
+    if cov_file is not None:
+        cov_data = _extract_coverage(cov_file, phylogeny)
+    else:
+        cov_data = None
+
     # Plot alignment
     plot_alignment(alignment, PLOT_FNAME, PREFIX, cov_data, phylogeny,
                    consensus_seq, conserved_seq, mutations_found, LABELS,

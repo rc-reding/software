@@ -4,7 +4,7 @@ from multiprocessing import cpu_count
 from helper_func import process_reads, retrieve_reads, retrieve_depth,\
                         extract_genes_seq, house_keeping, collate_gene_seq,\
                         analyse_seqs_found, plot_analysis, sanitise_options,\
-                        parse_directories_init
+                        parse_directories_init, retrieve_phylogeny
 import os, argparse
 import sys  # temporal?
 
