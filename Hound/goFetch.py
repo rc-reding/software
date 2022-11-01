@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.9
 
 from multiprocessing import cpu_count
 from helper_func import process_reads, retrieve_reads, retrieve_depth,\
@@ -7,7 +7,6 @@ from helper_func import process_reads, retrieve_reads, retrieve_depth,\
                         parse_directories_init
 import os, argparse
 import sys  # temporal?
-
 
 
 def main(Opts):
@@ -97,8 +96,7 @@ def main(Opts):
     # Do not move inside for-loop, or will generate a phylogeny/plot per DIR
     # while updating GENES_LIST in the background if DIR_LIST has multiple DIR
     if options.PHYLOGENY is True:
-        phylogeny, alignment_file, consensus_seq,\
-            conserved_seq = analyse_seqs_found(GENES_LIST, N_THREADS=N_CPU+2,
+        phylogeny, alignment_file = analyse_seqs_found(GENES_LIST, N_THREADS=N_CPU+2,
                                                FLT_THR=options.FILTER_THRESHOLD)
 
     if options.PLOT_FNAME is not None:
@@ -107,7 +105,12 @@ def main(Opts):
             RD_DEPTH = None
             RD_DEPTH_STATS = None
 
-        plot_analysis(alignment_file, RD_DEPTH, RD_DEPTH_STATS,
+        # If options.PHYLOGENY is not given, discover phylogeny generated
+        if options.PHYLOGENY is False:
+            alignment_file, phylogeny = retrieve_phylogeny(options.PATH,
+                                                           options.PREFIX)
+
+        plot_analysis(alignment_file, phylogeny, RD_DEPTH, RD_DEPTH_STATS,
                       options.PLOT_FNAME, options.PREFIX,
                       CUTOFF=options.SEQ_CUTOFF, ROI=options.ROI_COORDS,
                       PROMOTER=options.PROMOTER, LABELS=options.XLS_DB)
@@ -218,5 +221,3 @@ if __name__ == '__main__':
 # TODO LATER.
 # Step 14: Compute INDELs and structural variations
 # Step 15: Compute single-nucleotide polymorphisms (SNPs)
-
-

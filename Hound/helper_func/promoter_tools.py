@@ -211,22 +211,22 @@ def analyse_seqs_found(seqs_file: str, FLT_THR: float = 0.5,
         # This step is slow (phyml!), do it only if the phylogeny doesn't exist
         tree_file, phylogeny = _generate_phylogeny(alignment_file)
         _sort_alignment(alignment_file, phylogeny)
-        # Consensus is 80% ID, conserved is 95%. Conserved is for plotting *
-        consensus_seq, conserved_seq = _estimate_consensus(alignment_file,
-        CONS_THRESHOLD=0.7)
-        return phylogeny, alignment_file, consensus_seq, conserved_seq
+        return phylogeny, alignment_file
 
 
-def plot_analysis(alignment_file: str, cov_file: str, cov_stats: dict,
-                  PLOT_FNAME: str, PREFIX: str, CUTOFF: int = 0,
-                  ROI: bool = False, PROMOTER: bool = True,
+def plot_analysis(alignment_file: str, phylogeny: PhyloTree, cov_file: str,
+                  cov_stats: dict, PLOT_FNAME: str, PREFIX: str, ROI: bool,
+                  CUTOFF: int = 0, PROMOTER: bool = True,
                   LABELS: str = None) -> str:
     """
         Prodice barcode plot of multiple alignment given by `alignment_file'.
     """
     # Extract metadata for TEM promoter boxes
     # TODO: Avoid hard-coding sequences, take a user-given parameter
-    if ROI is not False:
+    # Consensus is 80% ID, conserved is 95%. Conserved is for plotting *
+    consensus_seq,\
+        conserved_seq = _estimate_consensus(alignment_file, CONS_THRESHOLD=0.7)
+    if ROI is not None:
         # Target sequences
         # TODO: Write FASTA parser with outputs ref_seqs, and ref_seqs_label
         Pb_10_SEQ = str("TAATGT")
