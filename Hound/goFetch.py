@@ -91,7 +91,8 @@ def main(Opts):
                                                 loci_metadata, SEQ_ID,
                                                 options.SEQ_CUTOFF, hk_metadata),
                                                 options.PREFIX, PRJ_PATH)
-                    RD_DEPTH_STATS[assembly] = (STATS)  # mean, std
+                    if STATS[0] is not str('NaN'):
+                        RD_DEPTH_STATS[assembly] = (STATS)  # mean, std
 
     # Do not move inside for-loop, or will generate a phylogeny/plot per DIR
     # while updating GENES_LIST in the background if DIR_LIST has multiple DIR
