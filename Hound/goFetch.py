@@ -100,15 +100,17 @@ def main(Opts):
                                                FLT_THR=options.FILTER_THRESHOLD)
 
     if options.PLOT_FNAME is not None:
-        # RD_DEPTH needed by plot_analysis routine, correct if neccessary
-        if options.CALC_COVERAGE is False:
-            RD_DEPTH = None
-            RD_DEPTH_STATS = None
-
         # If options.PHYLOGENY is not given, discover phylogeny generated
         if options.PHYLOGENY is False:
             alignment_file, phylogeny = retrieve_phylogeny(options.PATH,
                                                            options.PREFIX)
+            RD_DEPTH = None
+            RD_DEPTH_STATS = None
+
+        # RD_DEPTH needed by plot_analysis routine, correct if neccessary
+        if options.CALC_COVERAGE is False:
+            RD_DEPTH = None
+            RD_DEPTH_STATS = None
 
         plot_analysis(alignment_file, phylogeny, RD_DEPTH, RD_DEPTH_STATS,
                       options.PLOT_FNAME, options.PREFIX,
