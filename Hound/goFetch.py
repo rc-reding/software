@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.9
+#!/usr/bin/env python3
 
 from multiprocessing import cpu_count
 from helper_func import process_reads, retrieve_reads, retrieve_depth,\
@@ -23,8 +23,7 @@ def main(Opts):
     N_CPU = cpu_count() - 2
 
     DIR_LIST = os.listdir(options.PATH)
-    DIR_LIST = sorted([DIR for DIR in DIR_LIST if DIR.find(".") == -1 and\
-                        DIR.find("reads") == -1])
+    DIR_LIST = sorted([DIR for DIR in DIR_LIST if DIR.find(".") == -1])
 
     for DIR in DIR_LIST:
         PRJ_NAME, READS_PATH, DIR_DEPTH = parse_directories_init(options.PATH, DIR)
@@ -224,3 +223,4 @@ if __name__ == '__main__':
 # TODO LATER.
 # Step 14: Compute INDELs and structural variations
 # Step 15: Compute single-nucleotide polymorphisms (SNPs)
+
