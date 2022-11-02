@@ -135,9 +135,9 @@ def plot_alignment(alignment: Seq, FIG_FNAME: str, PREFIX: str,
     # Highligh ATG init translation
     if PROMOTER_ONLY is True:
         # I do NOT like this. Do better.
-        atg_pos = consensus_seq[:SEQ_CUTOFF-3].rfind('ATGAGTATT')  # TODO: This ATG seq is just for TEM
+        atg_pos = consensus_seq.find('ATGAGTA')  # TODO: This ATG seq is just for TEM
     else:
-        atg_pos = consensus_seq[SEQ_CUTOFF+3:].find('ATGAGTATT')
+        atg_pos = consensus_seq.find('ATG')
     atg_col = 'darkgrey' if atg_pos > -1 else 'tomato'
     ax['2'].plot([atg_pos+1, atg_pos + 2], [ax_ylim[1]*1.005, ax_ylim[1]*1.005],
                  atg_col, linewidth=3)  # Compensate with loc[0]+1 and loc[1]-1 as line is _very_ thick (thinner won't be visible)
@@ -279,7 +279,7 @@ def plot_alignment(alignment: Seq, FIG_FNAME: str, PREFIX: str,
     return coords
 
 
-def plot_depth_stats(depth_stats: dict):
+def plot_depth_stats(depth_stats: dict, FIG_FNAME: str):
     """
         Plots the average depth of all housekeeping, with std,
         for completeness.
@@ -311,7 +311,8 @@ def plot_depth_stats(depth_stats: dict):
     ax.set_ylabel('Coverage depth (mean $\pm$ standard deviation)', fontsize=8)
 
     # Save figure (TODO: implement user-given file)
-    fig.savefig("../figures/mlst_stats.eps", format='eps',
-                bbox_inches='tight')
+    FIG_EXT = FIG_FNAME.split('.')[1]
+    FIG_NAME = FIG_FNAME.split('.')[0] + str('_stats') + str('.') + FIG_EXT
+    fig.savefig(FIG_NAME, format=FIG_EXT, bbox_inches='tight')
     plt.close('all')
     return

@@ -261,4 +261,4 @@ def plot_analysis(alignment_file: str, phylogeny: PhyloTree, cov_file: str,
 
     # Plot [baseline] coverage depth stats for completeness
     if cov_stats is not None:
-        plot_depth_stats(cov_stats)
+        plot_depth_stats(cov_stats, PLOT_FNAME)
