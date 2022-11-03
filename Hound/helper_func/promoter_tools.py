@@ -158,19 +158,16 @@ def _find_mutations(sample_sequence: Seq, reference_sequence: Seq,
         Return the exact location of a mutation, using the coordinates from
         the general alignment, for downstream plotting.
     """
-    from difflib import ndiff
+    if location is None:
+        # Comparing whole seq against consensus, check they have same length
+        assert len(sample_sequence) == len(reference_sequence)
 
-    sequence_difference = ndiff(reference_sequence, sample_sequence)
-
-    init_location = location[0]
     coordinates = list()
-
-    correction_coeff = 0  # Account for presence of added nt (+C)
-    for pos, change in enumerate(sequence_difference):
-        if change[0] == '-':
-            coordinates.append(init_location + pos - correction_coeff)
-        elif change[0] == '+':
-            correction_coeff +=1
+    cur_pos = 0 if location is None else location[0]
+    for residue_sample, residue_ref in zip(sample_sequence, reference_sequence):
+        if residue_sample != residue_ref and residue_sample != '-':
+            coordinates.append(cur_pos)
+        cur_pos += 1
     return coordinates
 
 
@@ -186,9 +183,15 @@ def _detect_mutations(alignment_file: str, ref_seqs_locations: list,
     mutations = dict()
     for seq in alignment:
         mutations[seq.id] = list()  # Create an entry for each assembly
-        for id, location in enumerate(ref_seqs_locations):
-            mut_coordinates = _find_mutations(seq[location[0]:location[1]],
-                                              ref_seqs[id], location)
+        if ref_seqs_locations is not None:
+            for id, location in enumerate(ref_seqs_locations):
+                mut_coordinates = _find_mutations(seq[location[0]:location[1]],
+                                                  ref_seqs[id], location)
+                if len(mut_coordinates) > 0:
+                    # Add to dictionary only if mutations are found
+                    mutations[seq.id].append(mut_coordinates)
+        else:
+            mut_coordinates = _find_mutations(seq, ref_seqs, None)
             if len(mut_coordinates) > 0:
                 # Add to dictionary only if mutations are found
                 mutations[seq.id].append(mut_coordinates)
@@ -247,7 +250,7 @@ def plot_analysis(alignment_file: str, phylogeny: PhyloTree, cov_file: str,
         mutations_found = _detect_mutations(alignment_file, ref_seqs_locations,
                                             ref_seqs)
     else:
-        mutations_found = None
+        mutations_found = _detect_mutations(alignment_file, None, consensus_seq)
         ref_seqs_locations = None
         ref_seqs_label = None
 

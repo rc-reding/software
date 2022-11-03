@@ -138,6 +138,8 @@ def plot_alignment(alignment: Seq, FIG_FNAME: str, PREFIX: str,
         if reference_regions[0] is not None:
             ref_label, ref_location = reference_regions
             atg_pos = ref_location[ref_label.index('ATG')][0]
+        else:
+            atg_pos = consensus_seq.find('ATG')
     else:
         atg_pos = consensus_seq.find('ATG')
     atg_col = 'darkgrey' if atg_pos > -1 else 'tomato'
