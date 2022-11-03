@@ -195,6 +195,20 @@ def _detect_mutations(alignment_file: str, ref_seqs_locations: list,
     return mutations
 
 
+def _parse_roi(ROI: str):
+    """
+        Parse file with regions of interest (ROI) to highlight in the
+        multiple alignment plot.
+    """
+    roi_entries = SeqIO.parse(ROI, 'fasta')
+    ref_seqs = list()
+    ref_seqs_label = list()
+    for roi_seq in roi_entries:
+        ref_seqs.append(roi_seq.seq)
+        ref_seqs_label.append(str(' ').join(roi_seq.description.split(' ')[1:]))
+    return ref_seqs, ref_seqs_label
+
+
 def analyse_seqs_found(seqs_file: str, FLT_THR: float = 0.5,
                        N_THREADS: int = 1) -> str:
     """
@@ -215,7 +229,7 @@ def analyse_seqs_found(seqs_file: str, FLT_THR: float = 0.5,
 
 
 def plot_analysis(alignment_file: str, phylogeny: PhyloTree, cov_file: str,
-                  cov_stats: dict, PLOT_FNAME: str, PREFIX: str, ROI: bool,
+                  cov_stats: dict, PLOT_FNAME: str, PREFIX: str, ROI: str,
                   CUTOFF: int = 0, PROMOTER: bool = True,
                   LABELS: str = None) -> str:
     """
@@ -228,18 +242,8 @@ def plot_analysis(alignment_file: str, phylogeny: PhyloTree, cov_file: str,
         conserved_seq = _estimate_consensus(alignment_file, CONS_THRESHOLD=0.7)
     if ROI is not None:
         # Target sequences
-        # TODO: Write FASTA parser with outputs ref_seqs, and ref_seqs_label
-        Pb_10_SEQ = str("TAATGT")
-        Pa_35_SEQ = str("TTGAAG")
-        Pb_10_35_SEQ = str("GTGATACGCC")
-        P3_35 = str("TTCAAA")
-        P3_4_10 = str("GACAAT")
-        ref_seqs = tuple([P3_35, P3_4_10, Pb_10_SEQ, Pa_35_SEQ,
-                          Pb_10_35_SEQ])
-        ref_seqs_label = tuple(["P3 -35", "P3/4-10", "Pb -10",
-                                "Pa -35", "Pb -35/\nPa -10"])
-        ref_seqs_locations = _extract_reference_locations(consensus_seq,
-                                                          ref_seqs)
+        ref_seqs, ref_seqs_label = _parse_roi(ROI)
+        ref_seqs_locations = _extract_reference_locations(consensus_seq, ref_seqs)
         mutations_found = _detect_mutations(alignment_file, ref_seqs_locations,
                                             ref_seqs)
     else:

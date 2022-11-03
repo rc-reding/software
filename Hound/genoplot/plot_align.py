@@ -126,16 +126,18 @@ def plot_alignment(alignment: Seq, FIG_FNAME: str, PREFIX: str,
     if reference_regions[0] is not None:
         ref_label, ref_location = reference_regions
         for label, location in zip(ref_label, ref_location):
-            ax['2'].plot([location[0]+1, location[1]-1], [ax_ylim[1]*1.005,
-                         ax_ylim[1]*1.005], 'black', linewidth=3)
-            ax['2'].text(location[0] + int((location[1] - location[0])/2),
-                         ax_ylim[1]*1.015, label, horizontalalignment='center',
-                         fontsize=7)
+            if label != 'ATG':
+                ax['2'].plot([location[0]+1, location[1]-1], [ax_ylim[1]*1.005,
+                             ax_ylim[1]*1.005], 'black', linewidth=3)
+                ax['2'].text(location[0] + int((location[1] - location[0])/2),
+                             ax_ylim[1]*1.015, label.replace('\\n', '\n'),
+                             horizontalalignment='center', fontsize=7)
 
     # Highligh ATG init translation
     if PROMOTER_ONLY is True:
-        # I do NOT like this. Do better.
-        atg_pos = consensus_seq.find('ATGAGTA')  # TODO: This ATG seq is just for TEM
+        if reference_regions[0] is not None:
+            ref_label, ref_location = reference_regions
+            atg_pos = ref_location[ref_label.index('ATG')][0]
     else:
         atg_pos = consensus_seq.find('ATG')
     atg_col = 'darkgrey' if atg_pos > -1 else 'tomato'
