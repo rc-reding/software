@@ -146,6 +146,8 @@ def _extract_coverage(coverage_file: str, phylogeny: Align) -> tuple:
             else:
                 cov_loci[seq_id + str('_L') + locus_n] = loci_cov
                 cov_hk[seq_id + str('_L') + locus_n] = hk_cov
+
+    del cov_raw
     ## More elegant... but excludes genes with multiple copies
     # cov_loci = dict([itemgetter(*[0, -2])(i.split("\t")) for i in cov_raw if len(i) > 0])
     # cov_hk = dict([itemgetter(*[0, -1])(i.split("\t")) for i in cov_raw if len(i) > 0])

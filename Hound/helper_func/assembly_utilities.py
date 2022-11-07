@@ -131,6 +131,8 @@ def _extract_contig_coords(depth_filename: str, contig_id: str) -> int:
             break
         line_n += 1
 
+    del depth
+
     if INIT_FOUND and END_FOUND:
         return INIT, END
     else:
