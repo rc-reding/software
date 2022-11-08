@@ -144,7 +144,6 @@ def _extract_contig_rd_depth(depth_filename: str, contig_id: str) -> tuple:
         Retrieve coverage depth for a specific contig
     """
     init_pos, end_pos = _extract_contig_coords(depth_filename, contig_id)
-    depth_raw = open(depth_filename, 'r').readlines()
 
     # If gene is in complementary strand...
     if init_pos > end_pos:
@@ -152,8 +151,12 @@ def _extract_contig_rd_depth(depth_filename: str, contig_id: str) -> tuple:
         end_pos = init_pos
         init_pos = tmp
 
-    return tuple(int(i.removesuffix('\n').split('\t')[-1])\
-                    for i in depth_raw[init_pos:end_pos])
+    depth_raw = subprocess.check_output(['head -n ' + str(end_pos+1) + ' ' +\
+                                         depth_filename + ' | tail -n ' +\
+                                         str(end_pos-init_pos+1)],
+                                         shell=True).decode()
+
+    return tuple(int(i.split('\t')[-1]) for i in depth_raw.split('\n') if len(i) > 0)
 
 
 def _depth_little_helper(assembly: str, GENE_ID: str, metadata: dict,
