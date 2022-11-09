@@ -50,7 +50,11 @@ def _parse_blast_output(SEQ_ID: str, match_list: str, THRESHOLD_RANGE: tuple) ->
     file_stats = os.lstat(match_list)
     min_threshold, max_threshold = THRESHOLD_RANGE
     if file_stats.st_size == 0:
-        print("No matches found in assembly '" + SEQ_ID + str("'."))
+        if str('mlst') in match_list.lower():
+            msg = str("(MLST) No matches found in assembly '") + SEQ_ID + str("'.")
+        else:
+            msg = str("No matches found in assembly '") + SEQ_ID + str("'.")
+        print(msg)
         return False
     else:
         initial_list = csv.reader(open(match_list, 'r'), delimiter='\t')
@@ -87,12 +91,22 @@ def _parse_blast_output(SEQ_ID: str, match_list: str, THRESHOLD_RANGE: tuple) ->
                 # It is a given that more genes exist above the max_threshold.
                 entries_skipped = True
         if len(hits_dict) == 0:
-            print("***WARNING*** Detection window is too restrictive:" +
-                  " Hits found in '" + SEQ_ID + "' but NONE added.")
+            if str('mlst') in match_list.lower():
+                msg = str("(MLST) ***WARNING*** Detection window is too restrictive: Hits found in '") +\
+                        SEQ_ID + str("' but NONE added.")
+            else:
+                msg = str("***WARNING*** Detection window is too restrictive: Hits found in '") +\
+                        SEQ_ID + str("' but NONE added.")
+            print(msg)
             return False
         elif entries_skipped is True:
-            print("ID_THRESHOLD: Hits added from '" + SEQ_ID +
-                  "', some were left behind with low identity.")
+            if str('mlst') in match_list.lower():
+                msg = str("(MLST) ID_THRESHOLD: Hits added from '") + SEQ_ID +\
+                    str("', some were left behind with low identity.")
+            else:
+                msg = str("ID_THRESHOLD: Hits added from '") + SEQ_ID +\
+                    str("', some were left behind with low identity.")
+            print(msg)
             return hits_dict
         else:
             return hits_dict
