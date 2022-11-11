@@ -29,10 +29,6 @@ def main(Opts):
         PRJ_NAME, READS_PATH, DIR_DEPTH = parse_directories_init(options.PATH, DIR)
 
         if options.ASSEMBLE is True:
-            # if options.CALC_COVERAGE is True:
-            #     coverage_data_found = check_coverage_data_exists()
-            #     if coverage_data_found is False:
-            #         raise ValueError("MSG HERE")
             rds_count = 1
             illumina_rds = retrieve_reads(path=READS_PATH)
             for rd in illumina_rds[0:-1:2]:
@@ -92,6 +88,10 @@ def main(Opts):
                                                 options.PREFIX, PRJ_PATH)
                     if STATS[0] is not str('NaN'):
                         RD_DEPTH_STATS[assembly] = (STATS)  # mean, std
+
+        if DIR_DEPTH == 1:
+            # Avoids processing 'reads/' directory to find/extract any genes.
+            break
 
     # Do not move inside for-loop, or will generate a phylogeny/plot per DIR
     # while updating GENES_LIST in the background if DIR_LIST has multiple DIR
