@@ -120,7 +120,7 @@ def plot_alignment(alignment: Seq, FIG_FNAME: str, PREFIX: str,
                     zorder=-10)
 
     if PROMOTER_ONLY is True:
-        ax['2'].set_xlim(0, SEQ_CUTOFF * 1.35)
+        ax['2'].set_xlim(0, SEQ_CUTOFF * 1.75)
 
     # Highlight promoter regions, if any
     if reference_regions[0] is not None:
