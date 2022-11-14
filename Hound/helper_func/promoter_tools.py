@@ -221,7 +221,7 @@ def analyse_seqs_found(seqs_file: str, FLT_THR: float = 0.5,
         and generate the corresponding phylogeny.
     """
     import os
-    if os.path.exists(seqs_file) is True:
+    if os.path.exists(seqs_file) is True and os.lstat(seqs_file).st_size > 0:
         # Align sequences
         alignment_file = multiple_seq_alignment(seqs_file, FLT_THR, N_THREADS)
         # Mark duplicated sequence names
@@ -231,6 +231,8 @@ def analyse_seqs_found(seqs_file: str, FLT_THR: float = 0.5,
         tree_file, phylogeny = _generate_phylogeny(alignment_file)
         _sort_alignment(alignment_file, phylogeny)
         return phylogeny, alignment_file
+    else:
+        return None, None
 
 
 def plot_analysis(alignment_file: str, phylogeny: PhyloTree, cov_file: str,

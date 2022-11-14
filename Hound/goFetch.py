@@ -112,10 +112,12 @@ def main(Opts):
             RD_DEPTH = None
             RD_DEPTH_STATS = None
 
-        plot_analysis(alignment_file, phylogeny, RD_DEPTH, RD_DEPTH_STATS,
-                      options.PLOT_FNAME, options.PREFIX,
-                      CUTOFF=options.SEQ_CUTOFF, ROI=options.ROI_COORDS,
-                      PROMOTER=options.PROMOTER, LABELS=options.XLS_DB)
+        # Proceed with plot analysis only if genes were found/added.
+        if phylogeny is not None:
+            plot_analysis(alignment_file, phylogeny, RD_DEPTH, RD_DEPTH_STATS,
+                          options.PLOT_FNAME, options.PREFIX,
+                          CUTOFF=options.SEQ_CUTOFF, ROI=options.ROI_COORDS,
+                          PROMOTER=options.PROMOTER, LABELS=options.XLS_DB)
 
 
 if __name__ == '__main__':
