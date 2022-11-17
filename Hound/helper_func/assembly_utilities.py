@@ -1,6 +1,6 @@
 import os, sys, subprocess, math
 from .sundry import _find_tool, _check_directory, _cleanup_path
-from .ncbi import _convert_gene_name, _sanitise_gene_metadata
+from .ncbi import _sanitise_gene_metadata
 
 # Define constants
 SEQS_FNAME = "/coverage_mapped_genes.txt"

@@ -1,5 +1,5 @@
 import os, csv
-from Bio import SeqIO
+from Bio import SeqIO, Seq
 from .sundry import _find_tool, _cleanup_path
 
 
@@ -7,6 +7,51 @@ from .sundry import _find_tool, _cleanup_path
 # Define constants
 SEQS_FNAME = "/genes_found.fa"
 SEQS_DN_FNAME = "/genes_found_denovo_assembly.fa"
+
+
+def _find_cds(CONTIG_SEQ: Seq, HIT_INIT: int, HIT_END: int, TARGET_SEQ: Seq):
+    """
+        Try to find 'TARGET_GENE' full open reading frame, *WITHIN THE SAME
+        CONTIG*, if the sequence reported by BLAST+ is truncated.
+    """
+    if HIT_INIT < HIT_END:
+        REV_COMPLEMENT = False
+        DETECTED_SEQ = CONTIG_SEQ[HIT_INIT:HIT_END]
+    else:
+        REV_COMPLEMENT = True
+        DETECTED_SEQ = CONTIG_SEQ[HIT_END:HIT_INIT]
+        DETECTED_SEQ = DETECTED_SEQ[::-1]
+
+    FRAME_FOUND = False
+    for FR_NUM in range(3):
+        if DETECTED_SEQ in CONTIG_SEQ[FR_NUM:] is True:
+            FR_FOUND = True
+            break
+
+    if FRAME_FOUND is True:
+        if REV_COMPLEMENT is False:
+            PUTATIVE_INIT = CONTIG_SEQ[FR_NUM:].find(DETECTED_SEQ) + FR_NUM
+            PUTATIVE_END = PUTATIVE_INIT + len(DETECTED_SEQ) + FR_NUM
+        else:
+            PUTATIVE_END = CONTIG_SEQ[FR_NUM:].find(DETECTED_SEQ) + FR_NUM
+            PUTATIVE_INIT = PUTATIVE_END + len(DETECTED_SEQ) + FR_NUM
+
+        # Is DETECTED_SEQ at the end, or at the beginning of TARGET_SEQ?
+        L_BOUND = TARGET_SEQ.find(DETECTED_SEQ.translate())  # Zero if beginning not truncated
+        H_BOUND = L_BOUND + len(DETECTED_SEQ.translate())
+
+        NEW_INIT = PUTATIVE_INIT - 3 * L_BOUND if L_BOUND > 0 else PUTATIVE_INIT
+        if len(TARGET_SEQ[L_BOUND+H_BOUND:]) > 0:  # True if end of DETECTED_SEQ truncated
+            NEW_END = PUTATIVE_END + len(TARGET_SEQ[L_BOUND+H_BOUND:]) * 3
+        else:
+            NEW_END = PUTATIVE_END
+
+        if NEW_INIT == HIT_INIT and NEW_END == HIT_END:
+            print("Open reading frame spread across multiple contigs.")
+        return NEW_INIT, NEW_END
+    else:
+        print("Open reading frame not found, returning BLAST+ coordinates.")
+        return HIT_INIT, HIT_END
 
 
 def _convert_to_db(assembly: str, N_THREADS: int) -> str:
@@ -159,7 +204,8 @@ def _extract_assembly_ID(assembly: str, dir_depth: int, de_novo: bool) -> str:
                str("/").join(prj_path)
 
 
-def _convert_gene_name(ncbi_code: str, TARGET_GENES: str) -> str:
+def _process_handle(ncbi_code: str, HIT_SEQ: Seq, HIT_INIT: int,
+                       HIT_END: int, TARGET_GENES: str) -> str:
     """
         Replace NCBI alphanumeric codes by the human-readable gene/protein
         name provided by the correspondings fasta files.
@@ -169,10 +215,18 @@ def _convert_gene_name(ncbi_code: str, TARGET_GENES: str) -> str:
             ncbi_code = str("_").join(ncbi_code.split("_")[:-1])
         elif len(ncbi_code.split("_")) > 2:
             ncbi_code = str("_").join(ncbi_code.split("_")[:-1])
+
     # Detect ncbi_code in fasta file, return human-readable name
     db_metadata = SeqIO.parse(TARGET_GENES, 'fasta')
-    ncbi_entry = [entry.description for entry in db_metadata if entry.name == ncbi_code]
-    return ncbi_entry[0].split(" [")[0].split(" (")[0].split(" ")[-1]
+    ncbi_entry = [entry for entry in db_metadata if entry.name == ncbi_code]
+
+    # Estimate CDS completion. Cannot be moved to '_extract_gene_data'.
+    HIT_LENGTH = abs((HIT_END - HIT_INIT)) / 3  # ASSUMES 'TARGET' is AA (FIX)
+    if HIT_LENGTH < len(ncbi_entry[0].seq):
+        HIT_INIT, HIT_END = _find_cds(HIT_SEQ, HIT_INIT, HIT_END, ncbi_entry[0].seq)
+
+    return ncbi_entry[0].description.split(" [")[0].split(" (")[0].split(" ")[-1],\
+        HIT_INIT, HIT_END
 
 
 def _extract_gene_data(db_seq: SeqIO, TARGET_GENES: str, PREFIX: str,
@@ -208,6 +262,10 @@ def _extract_gene_data(db_seq: SeqIO, TARGET_GENES: str, PREFIX: str,
             ID = gene_metadata[gene][ID_POS_ID]
             if handle.id == handle_id:
                 MAX_LENGTH = len(handle.seq)
+                gene_readable,\
+                    START_POS, END_POS = _process_handle(gene, handle.seq,
+                                                         START_POS, END_POS,
+                                                         TARGET_GENES)
                 if START_POS < END_POS:  # gene is in forward strand
                     LOW_BOUNDARY = max([0, START_POS-SEQ_CUTOFF-1])
                     UP_BOUNDARY = min([END_POS+3, MAX_LENGTH])
@@ -220,7 +278,6 @@ def _extract_gene_data(db_seq: SeqIO, TARGET_GENES: str, PREFIX: str,
                     Extd_ORF = Extd_ORF[::-1]
                 # Now write in FASTA format
                 with open(PRJ_PATH + SEQS_DN_FNAME, 'a') as fOut:
-                    gene_readable = _convert_gene_name(gene, TARGET_GENES)
                     fOut.write(">" + SEQ_ID.split("_assembly.fa")[0] +\
                                str("__[") + handle_id.split("_cov_")[0] +\
                                str("]") + str(" ") + gene_readable +\
@@ -307,7 +364,7 @@ def find_amr_genes(assembly: str, GENES_FNAME: str, HKGENES_FNAME: str,
     blast_args = tuple(["-num_threads " + str(N_THREADS), "-evalue " + str(EVAL),
                        "-word_size " + str(WORD_SIZE), "-matrix " + MATRIX,
                        "-gapopen " + str(G_OPEN), "-gapextend " +\
-                       str(G_EXTENDED), "-outfmt " + str(O_FMT),
+                       str(G_EXTENDED), "-outfmt " + str(O_FMT), "-seg no",
                        "-query " + GENES_FNAME, "-db " +\
                        assembly_db, "-out " + matches_file])
     os.system(blast + str(" ").join(blast_args))
@@ -317,7 +374,10 @@ def find_amr_genes(assembly: str, GENES_FNAME: str, HKGENES_FNAME: str,
         blast_args = tuple(["-num_threads " + str(N_THREADS), "-evalue " + str(EVAL),
                            "-word_size " + str(WORD_SIZE), "-matrix " + MATRIX,
                            "-gapopen " + str(G_OPEN), "-gapextend " +\
-                           str(G_EXTENDED), "-outfmt " + str(O_FMT),
+                           str(G_EXTENDED), "-outfmt " + str(O_FMT), "-seg no",
                            "-query " + HKGENES_FNAME, "-db " + assembly_db,
                            "-out " + housekeeping_file])
         os.system(blast + str(" ").join(blast_args))
+
+
+
