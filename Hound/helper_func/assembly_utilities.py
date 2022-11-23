@@ -115,28 +115,25 @@ def _extract_contig_coords(depth_filename: str, contig_id: str) -> int:
         Screen through depth data to find first and last lines where
         'contig_id' is found.
     """
-    depth = open(depth_filename, 'r')
+    grep_args = str(' -n "') + contig_id + str('" ') + depth_filename
 
-    INIT_FOUND = False
-    END_FOUND = False
-
-    line_n = 0
-    for line in depth:
-        if contig_id in line and INIT_FOUND is False:
-            INIT_FOUND = True
-            INIT = line_n
-        elif contig_id not in line and INIT_FOUND is True:
-            END = line_n-1  # Previous line was the last with contig_id
-            END_FOUND = True
-            break
-        line_n += 1
-
-    del depth
-
-    if INIT_FOUND and END_FOUND:
-        return INIT, END
+    # Find initial position
+    cmd_output = subprocess.check_output(['grep' + grep_args + '| head -n 1'],
+                                          shell=True).decode()
+    if len(cmd_output.split(':')[0]) > 0:
+        INIT_FOUND = int(cmd_output.split(':')[0])
     else:
-        return False, False
+        INIT_FOUND = False
+
+    # Find initial position
+    cmd_output = subprocess.check_output(['grep' + grep_args + '| tail -n 1'],
+                                          shell=True).decode()
+    if len(cmd_output.split(':')[0]) > 0:
+        END_FOUND = int(cmd_output.split(':')[0])
+    else:
+        END_FOUND = False
+
+    return INIT_FOUND, END_FOUND
 
 
 def _extract_contig_rd_depth(depth_filename: str, contig_id: str) -> tuple:
