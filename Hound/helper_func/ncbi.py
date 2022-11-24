@@ -100,13 +100,13 @@ def _parse_blast_output(SEQ_ID: str, match_list: str, THRESHOLD_RANGE: tuple) ->
         else:
             msg = str("No matches found in assembly '") + SEQ_ID + str("'.")
         print(msg)
-        return False
+        return None
     else:
         initial_list = csv.reader(open(match_list, 'r'), delimiter='\t')
         hits_dict = dict()
         entry_seen = set()
         n_copies = dict()
-        entries_skipped = False
+        entries_skipped = None
         for entry in initial_list:
             # Retrieve fields of interest
             hit_seqid = entry[0]
@@ -143,7 +143,7 @@ def _parse_blast_output(SEQ_ID: str, match_list: str, THRESHOLD_RANGE: tuple) ->
                 msg = str("***WARNING*** Detection window is too restrictive: Hits found in '") +\
                         SEQ_ID + str("' but NONE added.")
             print(msg)
-            return False
+            return None
         elif entries_skipped is True:
             if str('mlst') in match_list.lower():
                 msg = str("(MLST) ID_THRESHOLD: Hits added from '") + SEQ_ID +\
@@ -312,7 +312,7 @@ def compile_genes_detected(assembly: str, blast_output: str, TARGET_GENES: str,
         SEQS_DN_FNAME = SEQS_DN_FNAME.split('.')[0] + str('_') + PREFIX + str('.')+\
                         SEQS_DN_FNAME.split('.')[1]
 
-    if gene_metadata is not False:
+    if gene_metadata is not None:
         # Parse gene metadata assembly
         db_seq = SeqIO.parse(assembly.replace(".bam", ".fa"), "fasta")
         _extract_gene_data(db_seq, TARGET_GENES, PREFIX, gene_metadata, SEQ_ID,\
@@ -320,7 +320,7 @@ def compile_genes_detected(assembly: str, blast_output: str, TARGET_GENES: str,
         return gene_metadata, mlst_metadata, SEQ_ID, PRJ_PATH,\
             PRJ_PATH + SEQS_DN_FNAME
     else:
-        return False, False, SEQ_ID, PRJ_PATH, PRJ_PATH + SEQS_DN_FNAME
+        return None, None, SEQ_ID, PRJ_PATH, PRJ_PATH + SEQS_DN_FNAME
 
 
 def find_amr_genes(assembly: str, GENES_FNAME: str, HKGENES_FNAME: str,
