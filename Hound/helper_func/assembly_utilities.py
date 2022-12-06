@@ -221,7 +221,7 @@ def retrieve_depth(seq_data: tuple, PREFIX: str, PRJ_PATH: str):
     hk_metadata = _sanitise_gene_metadata(hk_metadata)
 
     # Calculate coverage of assembly (one baseline per assembly, out of loop)
-    if hk_metadata is not False:
+    if hk_metadata is not None and loci_metadata is not None:
         b_line = list()
         for GENE_ID in hk_metadata:
             rd_depth = _depth_little_helper(assembly, GENE_ID, hk_metadata, SEQ_ID,
@@ -238,7 +238,7 @@ def retrieve_depth(seq_data: tuple, PREFIX: str, PRJ_PATH: str):
         std_b_line = str("NaN")
         print("Assembly '"+ assembly +"' has not enough data to calculate baseline depth.")
 
-    if loci_metadata is not False:
+    if loci_metadata is not None:
         for GENE_ID in loci_metadata:
             rd_depth = _depth_little_helper(assembly, GENE_ID, loci_metadata, SEQ_ID,
                                             (END_POS, START_POS, TARGET_SEQID),
@@ -250,3 +250,4 @@ def retrieve_depth(seq_data: tuple, PREFIX: str, PRJ_PATH: str):
                            str(sum(rd_depth) / len(rd_depth)) + str("\t") +
                            str(mean_b_line) + str("\n"))
     return PRJ_PATH + SEQS_DN_FNAME, tuple([mean_b_line, std_b_line])
+

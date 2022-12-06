@@ -170,7 +170,7 @@ def _sanitise_gene_metadata(gene_metadata: dict) -> dict:
     # Note BLAST annotates first the hit with highest homology to query
     # sequence. Then the second hit with highest score, and so on.
     if gene_metadata is None or gene_metadata is False:
-        return False
+        return None
     else:
         REF_MATCH = tuple(gene_metadata.keys())[0]
         REF_LEN = int(gene_metadata[REF_MATCH][LENGTH_ID])
@@ -301,7 +301,7 @@ def compile_genes_detected(assembly: str, blast_output: str, TARGET_GENES: str,
     # Filter BLAST output (enforce higher restrictions for housekeeping genes)
     gene_metadata = _parse_blast_output(SEQ_ID, blast_output,
                                         THRESHOLD_RANGE=ID_THRESHOLD)
-    if CALC_COVERAGE is True:
+    if CALC_COVERAGE is True and gene_metadata is not None:
         mlst_metadata = _parse_blast_output(SEQ_ID, mlst_output,
                                             THRESHOLD_RANGE=(0.95, 1.0))
     else:
@@ -369,7 +369,7 @@ def find_amr_genes(assembly: str, GENES_FNAME: str, HKGENES_FNAME: str,
                        assembly_db, "-out " + matches_file])
     os.system(blast + str(" ").join(blast_args))
 
-    if CALC_COVERAGE is True:
+    if CALC_COVERAGE is True and os.lstat(matches_file).st_size > 0:
         # Find MLST (housekeeping) genes in assembly for coverage basedline
         blast_args = tuple(["-num_threads " + str(N_THREADS), "-evalue " + str(EVAL),
                            "-word_size " + str(WORD_SIZE), "-matrix " + MATRIX,
