@@ -227,10 +227,15 @@ def analyse_seqs_found(seqs_file: str, FLT_THR: float = 0.5,
         # Mark duplicated sequence names
         _mark_duplicates(alignment_file)
         # Generate phylogeny to re-arrange alignment sequences
-        # This step is slow (phyml!), do it only if the phylogeny doesn't exist
-        tree_file, phylogeny = _generate_phylogeny(alignment_file)
-        _sort_alignment(alignment_file, phylogeny)
-        return phylogeny, alignment_file
+        alignment = AlignIO.read(alignment_file, 'fasta')
+        if len(alignment) > 2:
+            # This step is slow (phyml!), do it only if the phylogeny doesn't exist
+            tree_file, phylogeny = _generate_phylogeny(alignment_file)
+            _sort_alignment(alignment_file, phylogeny)
+            return phylogeny, alignment_file
+        else:
+            print("***WARNING*** Less than 3 sequences found, not enough to calculate phylogeny.")
+            return None, alignment_file
     else:
         return None, None
 
