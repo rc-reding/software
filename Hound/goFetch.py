@@ -6,7 +6,8 @@ from helper_func import process_reads, retrieve_reads, retrieve_depth,\
                         analyse_seqs_found, plot_analysis, sanitise_options,\
                         parse_directories_init, retrieve_phylogeny
 import os, argparse
-import sys  # temporal?
+import sys
+sys.setrecursionlimit(6000)  # Defaults to 3000, may not be enough for some isolates
 
 
 def main(Opts):
