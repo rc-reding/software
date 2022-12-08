@@ -74,7 +74,11 @@ def _convert_to_db(assembly: str, N_THREADS: int) -> str:
         db_path = assembly  # De novo assembly is already in FASTA
 
     # Create BLAST (generate once to save time in multiple searches)
-    assembly_idx = db_path.replace(".fa", ".fa.ndb")
+    if db_path.find(".fasta") > -1:
+        assembly_idx = db_path.replace(".fasta", ".fasta.ndb")
+    else:
+        assembly_idx = db_path.replace(".fa", ".fa.ndb")
+
     if os.path.exists(assembly_idx) is False:
         makedb = _find_tool('makeblastdb')
         makedb_args = tuple(["-in " + db_path, "-parse_seqids",
