@@ -68,7 +68,7 @@ def main(Opts):
         if options.TARGET_GENES is not None:
             # Extract information for genes of interest
             assemblies = [file for file in os.listdir(ASSEMBLY_PATH)
-                            if file.find(".fa") > -1 and file.find(".fa.") == -1]
+                            if file.find(".fa") > -1 and file.count(".") == 1]
             RD_DEPTH_STATS = dict() if options.CALC_COVERAGE is True else None
             for assembly in assemblies:  # Force extracting promoter + CDS
                 loci_metadata, hk_metadata, SEQ_ID, PRJ_PATH,\

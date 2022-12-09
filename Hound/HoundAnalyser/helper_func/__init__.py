@@ -113,7 +113,10 @@ def house_keeping(assembly_path: str, alignments: bool = False) -> str:
             aln_path = str("/").join(aln_path.split("/")[:-2])
         os.system("rm -Rf " + aln_path)
     else:
-        blast_output = assembly_path.replace(".fa", ".blast")
+        if assembly_path.find(".fasta") > -1:  # For assemblies from MicrobesNG
+                blast_output = assembly_path.replace(".fasta", ".blast")
+        else:
+            blast_output = assembly_path.replace(".fa", ".blast")
         if os.path.exists(blast_output) is True:
             os.system("rm " + blast_output)
 
@@ -219,7 +222,10 @@ def extract_genes_seq(assembly: str, TARGET_GENES: str, HK_GENES: str,
     find_amr_genes(assembly, TARGET_GENES, HK_GENES, CALC_COVERAGE,
                    project_name, N_THREADS)
 
-    blast_output = assembly.replace(".fa", ".blast")
+    if assembly.find(".fasta") > -1:  # For assemblies from MicrobesNG
+        blast_output = assembly.replace(".fasta", ".blast")
+    else:
+        blast_output = assembly.replace(".fa", ".blast")
     gene_metadata, housekeeping_metadata, SEQ_ID, PRJ_PATH,\
         genes_list = compile_genes_detected(assembly, blast_output,
                                             TARGET_GENES, PREFIX, DIR_DEPTH,

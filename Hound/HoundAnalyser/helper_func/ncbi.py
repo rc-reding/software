@@ -357,6 +357,8 @@ def find_amr_genes(assembly: str, GENES_FNAME: str, HKGENES_FNAME: str,
     # Chr
     if assembly.find(".bam") > -1 and assembly.find(".bai") == -1:
         matches_file = assembly.replace(".bam", ".blast")
+    elif assembly.find(".fasta") > -1:  # For assemblies from MicrobesNG
+        matches_file = assembly.replace(".fasta", ".blast")
     elif assembly.find(".fa") > -1:
         matches_file = assembly.replace(".fa", ".blast")
 
