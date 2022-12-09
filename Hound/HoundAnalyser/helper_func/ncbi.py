@@ -328,8 +328,8 @@ def compile_genes_detected(assembly: str, blast_output: str, TARGET_GENES: str,
 
 
 def find_amr_genes(assembly: str, GENES_FNAME: str, HKGENES_FNAME: str,
-                   CALC_COVERAGE: bool, project_name: str = None,
-                   N_THREADS: int = 1) -> str:
+                   CALC_COVERAGE: bool, FIND_NT: bool = False,
+                   project_name: str = None, N_THREADS: int = 1) -> str:
     """
         Compares 'assembly' to genes located in bespoke, local BLAST database
         and returns hits found. The number of hits returned can be filtered
@@ -344,13 +344,16 @@ def find_amr_genes(assembly: str, GENES_FNAME: str, HKGENES_FNAME: str,
 
     # Compare list of genes to assembly_db.
     # tblastn: Prot-query in nucl-db, blastx: Nucl-query in prot-db
-    blast = _find_tool('tblastn')  # FIX: assumes target sequence is a protein.
+    if FIND_NT is False:
+        blast = _find_tool('tblastn')
+    else:
+        blast = _find_tool('blastn')
 
     # Default params
     EVAL = 0.05
-    WORD_SIZE = 7
+    WORD_SIZE = 7 if blast.find('tblastn') is True else 12  # TODO: Add custom WORD_SIZE??
     MATRIX = str("BLOSUM62")
-    G_OPEN = 11
+    G_OPEN = 11 if blast.find('tblastn') is True else 3
     G_EXTENDED = 1
     O_FMT = 6  # 6 = CSV, 7 = CSV w/ headers
 
@@ -367,22 +370,36 @@ def find_amr_genes(assembly: str, GENES_FNAME: str, HKGENES_FNAME: str,
         housekeeping_file = matches_file.replace(".blast", "_MLST.blast")
 
     # Find GENES_FNAME in assembly
-    blast_args = tuple(["-num_threads " + str(N_THREADS), "-evalue " + str(EVAL),
-                       "-word_size " + str(WORD_SIZE), "-matrix " + MATRIX,
-                       "-gapopen " + str(G_OPEN), "-gapextend " +\
-                       str(G_EXTENDED), "-outfmt " + str(O_FMT), "-seg no",
-                       "-query " + GENES_FNAME, "-db " +\
-                       assembly_db, "-out " + matches_file])
-    os.system(blast + str(" ").join(blast_args))
-
-    if CALC_COVERAGE is True and os.lstat(matches_file).st_size > 0:
-        # Find MLST (housekeeping) genes in assembly for coverage basedline
+    if FIND_NT is True:
+        blast_args = tuple(["-num_threads " + str(N_THREADS), "-evalue " + str(EVAL),
+                       "-word_size " + str(WORD_SIZE), "-gapopen " + str(G_OPEN),
+                       "-gapextend " + str(G_EXTENDED), "-outfmt " + str(O_FMT),
+                       "-query " + GENES_FNAME, "-db " + assembly_db,
+                       "-out " + matches_file])
+    else:  # AA search
         blast_args = tuple(["-num_threads " + str(N_THREADS), "-evalue " + str(EVAL),
                            "-word_size " + str(WORD_SIZE), "-matrix " + MATRIX,
                            "-gapopen " + str(G_OPEN), "-gapextend " +\
                            str(G_EXTENDED), "-outfmt " + str(O_FMT), "-seg no",
-                           "-query " + HKGENES_FNAME, "-db " + assembly_db,
-                           "-out " + housekeeping_file])
+                           "-query " + GENES_FNAME, "-db " +\
+                           assembly_db, "-out " + matches_file])
+    os.system(blast + str(" ").join(blast_args))
+
+    if CALC_COVERAGE is True and os.lstat(matches_file).st_size > 0:
+        # Find MLST (housekeeping) genes in assembly for coverage basedline
+        if FIND_NT is True:
+            blast_args = tuple(["-num_threads " + str(N_THREADS), "-evalue " + str(EVAL),
+                           "-word_size " + str(WORD_SIZE), "-gapopen " + str(G_OPEN),
+                           "-gapextend " + str(G_EXTENDED), "-outfmt " + str(O_FMT),
+                           "-query " + GENES_FNAME, "-db " + assembly_db,
+                           "-out " + matches_file])
+        else:
+            blast_args = tuple(["-num_threads " + str(N_THREADS), "-evalue " + str(EVAL),
+                               "-word_size " + str(WORD_SIZE), "-matrix " + MATRIX,
+                               "-gapopen " + str(G_OPEN), "-gapextend " +\
+                               str(G_EXTENDED), "-outfmt " + str(O_FMT), "-seg no",
+                               "-query " + HKGENES_FNAME, "-db " + assembly_db,
+                               "-out " + housekeeping_file])
         os.system(blast + str(" ").join(blast_args))
 
 

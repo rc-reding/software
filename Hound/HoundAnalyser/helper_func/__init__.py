@@ -43,6 +43,12 @@ def sanitise_options(options):
         raise ValueError("""--coverage requires reference/housekeeping genes to
                             estimate baseline coverage depth. Use --help for
                             instructions.""")
+                            
+    if options.NT_TYPE is True and options.TARGET_GENES is not None:
+        from Bio import SeqIO
+        SEQS = [SEQ for SEQ in SeqIO.parse(options.TARGET_GENES, 'fasta')]
+        if SEQS[0].translate().count('X') > 0:
+            raise ValueError("""--genes points to a file containing amino acid sequences. --nucl requires nucleotide sequences.""")
 
     if options.HK_GENES is True and options.CALC_COVERAGE is False:
         warnings.warn("""--hk-genes were given without --coverage. This option
@@ -209,7 +215,8 @@ def process_reads(illumina_rd: str, REFERENCE: str, PRJ_NAME: str, N_CPU: int,
 def extract_genes_seq(assembly: str, TARGET_GENES: str, HK_GENES: str,
                       project_name: str, PREFIX: str, DIR_DEPTH: int,
                       N_THREADS: int, seq_cutoff: int, ID_THRESHOLD: tuple,
-                      DENOVO: bool = False, CALC_COVERAGE: bool = False) -> str:
+                      DENOVO: bool = False, CALC_COVERAGE: bool = False,
+                      FIND_NT: bool = False) -> str:
     """
         Process assembly folder to retrieve BLAST output files, and parse
         them to create a FASTA file containing the nucleotidic sequence of
@@ -221,7 +228,7 @@ def extract_genes_seq(assembly: str, TARGET_GENES: str, HK_GENES: str,
     house_keeping(assembly)
 
     # Find matches
-    find_amr_genes(assembly, TARGET_GENES, HK_GENES, CALC_COVERAGE,
+    find_amr_genes(assembly, TARGET_GENES, HK_GENES, CALC_COVERAGE, FIND_NT,
                    project_name, N_THREADS)
 
     if assembly.find(".fasta") > -1:  # For assemblies from MicrobesNG

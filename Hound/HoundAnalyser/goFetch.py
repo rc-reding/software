@@ -79,7 +79,8 @@ def main(Opts):
                                                    N_CPU+2, options.SEQ_CUTOFF,
                                                    options.ID_THRESHOLD,
                                                    DENOVO=options.ASSEMBLE_DENOVO,
-                                                   CALC_COVERAGE=options.CALC_COVERAGE)
+                                                   CALC_COVERAGE=options.CALC_COVERAGE,
+                                                   FIND_NT=options.NT_TYPE)
                 if loci_metadata is not None and options.CALC_COVERAGE is True:
                     # Extract coverage depth for genes of interest + MLST genes
                     RD_DEPTH,\
@@ -161,6 +162,10 @@ if __name__ == '__main__':
     Args.add_argument("--genes", metavar="FILE", type=str, dest="TARGET_GENES",
                       help="List of genes to be found, in FASTA \
                       format. Requires --identity and --prefix.")
+
+    Args.add_argument("--nucl", action='store_true', dest="NT_TYPE",
+                      help="Use nucleotide sequences for the search. Requires \
+                      --genes.")
 
     Args.add_argument("--prefix", metavar="NAME", type=str, dest="PREFIX",
                       nargs=1, help="Label added to all output files. Required \
