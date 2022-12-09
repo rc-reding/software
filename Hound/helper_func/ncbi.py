@@ -225,9 +225,9 @@ def _process_handle(ncbi_code: str, HIT_SEQ: Seq, HIT_INIT: int,
     ncbi_entry = [entry for entry in db_metadata if entry.name == ncbi_code]
 
     # Estimate CDS completion. Cannot be moved to '_extract_gene_data'.
-    HIT_LENGTH = abs((HIT_END - HIT_INIT)) / 3  # ASSUMES 'TARGET' is AA (FIX)
-    if HIT_LENGTH < len(ncbi_entry[0].seq):
-        HIT_INIT, HIT_END = _find_cds(HIT_SEQ, HIT_INIT, HIT_END, ncbi_entry[0].seq)
+    # HIT_LENGTH = abs((HIT_END - HIT_INIT)) / 3  # ASSUMES 'TARGET' is AA (FIX)
+    # if HIT_LENGTH < len(ncbi_entry[0].seq):
+    #     HIT_INIT, HIT_END = _find_cds(HIT_SEQ, HIT_INIT, HIT_END, ncbi_entry[0].seq)
 
     return ncbi_entry[0].description.split(" [")[0].split(" (")[0].split(" ")[-1],\
         HIT_INIT, HIT_END
