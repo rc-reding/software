@@ -75,6 +75,8 @@ def sanitise_options(options):
         raise ValueError("""--labels FILE requires --plot [FILE]. Use --help for
                             instructions.""")
 
+    if options.PLOT_FNAME is not None and options.PLOT_FNAME.count(".") == 0:
+        raise ValueError("""Plot filename given, but what extension?""")
 
     if options.ID_THRESHOLD is not None:
         options.ID_THRESHOLD = tuple(options.ID_THRESHOLD)
