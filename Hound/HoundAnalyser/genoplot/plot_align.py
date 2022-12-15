@@ -21,17 +21,6 @@ def _convert_to_num(sequence: Seq) -> Seq:
            "6").replace("-", "0")
 
 
-def _create_custom_cmap():
-    """
-        Create colour map based on the numerical value assigned to each
-        nucleotide.
-    """
-    from matplotlib import cm
-    # use a = cm.get_cmap(cmap, number_positions)
-    # then change a.colors (array of arrays)
-    return
-
-
 def _format_tree_label(leaf, XLS_DB: str) -> str:
     """
         Manipulate the name of each leaf from the phylogenetic tree to
