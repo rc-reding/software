@@ -351,9 +351,9 @@ def find_amr_genes(assembly: str, GENES_FNAME: str, HKGENES_FNAME: str,
 
     # Default params
     EVAL = 0.05
-    WORD_SIZE = 7 if blast.find('tblastn') is True else 12  # TODO: Add custom WORD_SIZE??
+    WORD_SIZE = 7 if blast.find('tblastn') > -1 else 12  # TODO: Add custom WORD_SIZE??
     MATRIX = str("BLOSUM62")
-    G_OPEN = 11 if blast.find('tblastn') is True else 3
+    G_OPEN = 11 if blast.find('tblastn') > -1 else 3
     G_EXTENDED = 1
     O_FMT = 6  # 6 = CSV, 7 = CSV w/ headers
 
